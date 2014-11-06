@@ -34,6 +34,5 @@ func EventReciver(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-
-	fmt.Fprint(w, "fooooooooooo")
+	Emmit(event, req)
 }

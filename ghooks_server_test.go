@@ -32,5 +32,4 @@ func TestEventReciver(t *testing.T) {
 	if w.Code == 200 {
 		t.Fatalf("Allowd only POST Method but expected status 200; received %d", w.Code)
 	}
-
 }
