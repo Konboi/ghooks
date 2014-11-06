@@ -16,8 +16,8 @@ import "path/ghooks"
 function main() {
   hooks := Ghooks.NewHooks()
 
-  hooks.onPush(pushHandler)
-  hooks.onPullRequest(pullRequestHandler)
+  hooks.on("push", pushHandler)
+  hooks.on("pull_request", pullRequestHandler)
   hooks.Run()
 }
 
