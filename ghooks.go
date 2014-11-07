@@ -1,5 +1,71 @@
 package ghooks
 
+import (
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
+)
+
 const (
 	VERSION = 0.1
 )
+
+type Server struct {
+	Port int
+}
+
+type Hook struct {
+	Name string
+	Func func(payload interface{})
+}
+
+type Hooks struct {
+	Hooks []Hook
+}
+
+var hooks Hooks
+
+func On(name string, handler func(payload interface{})) {
+	hooks.Hooks = append(hooks.Hooks, Hook{Name: name, Func: handler})
+}
+
+func Emmit(name string, payload interface{}) {
+	for _, v := range hooks.Hooks {
+		if strings.EqualFold(v.Name, name) {
+			v.Func(payload)
+		}
+	}
+}
+
+func NewServer(port int) *Server {
+	return &Server{port}
+}
+
+func (s *Server) Run() error {
+	fmt.Printf("ghooks server start 127.0.0.1:%d \n", s.Port)
+	http.HandleFunc("/", Reciver)
+	return http.ListenAndServe(":"+strconv.Itoa(s.Port), nil)
+}
+
+func Reciver(w http.ResponseWriter, req *http.Request) {
+	if req.Method == "GET" {
+		http.Error(w, "Method Not Allowd", http.StatusMethodNotAllowed)
+		return
+	}
+
+	event := req.Header.Get("X-GitHub-Event")
+
+	if event == "" {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	var payload interface{}
+	decoder := json.NewDecoder(req.Body)
+	decoder.Decode(&payload)
+
+	Emmit(event, payload)
+	w.WriteHeader(http.StatusOK)
+}
