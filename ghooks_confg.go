@@ -2,7 +2,6 @@ package ghooks
 
 import (
 	"net"
-	"net/http"
 	"strconv"
 )
 
@@ -16,7 +15,7 @@ type Event struct {
 
 type Hook struct {
 	Name string
-	Func func(req *http.Request)
+	Func func(req interface{})
 }
 
 type Hooks struct {

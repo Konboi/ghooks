@@ -1,6 +1,7 @@
 package ghooks
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -18,11 +19,11 @@ var hooks Hooks
 
 func (s *Server) Run() error {
 	fmt.Printf("ghooks server start 127.0.0.1:%d \n", s.Conf.Port)
-	http.HandleFunc("/", EventReciver)
+	http.HandleFunc("/", Reciver)
 	return http.ListenAndServe(":"+strconv.Itoa(s.Conf.Port), nil)
 }
 
-func EventReciver(w http.ResponseWriter, req *http.Request) {
+func Reciver(w http.ResponseWriter, req *http.Request) {
 	if req.Method == "GET" {
 		http.Error(w, "Method Not Allowd", http.StatusMethodNotAllowed)
 		return
@@ -34,5 +35,11 @@ func EventReciver(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	Emmit(event, req)
+
+	var payload interface{}
+	decoder := json.NewDecoder(req.Body)
+	decoder.Decode(&payload)
+
+	Emmit(event, payload)
+	w.WriteHeader(http.StatusOK)
 }
