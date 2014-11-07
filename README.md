@@ -14,28 +14,19 @@ import "path/ghooks"
 
 
 function main() {
-  hooks := Ghooks.NewHooks()
+  port := 8080
+  hooks := ghooks.Server(port)
 
   hooks.on("push", pushHandler)
   hooks.on("pull_request", pullRequestHandler)
   hooks.Run()
 }
 
-function pushHandler(event ghooks.Evnet) {
-  if event.Message == nil {
-     fmt.Printf("Write commit message")
-  }
+function pushHandler(payload interface{}) {
+
 }
 
-function pullRequestHandler(event ghooks.Evnet) {
-  if event.Message == nil {
-     fmt.Printf("Write commit message")
-  }
+function pullRequestHandler(payload interface{}) {
+  fmt.Println("pull_request")
 }
-
 ```
-
-# Option
-
-
-* `--port` Set port number
