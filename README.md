@@ -1,6 +1,6 @@
 # ghooks
 
-ghooks is github evnet hooks server
+ghooks is github hooks receiver. inspired by [GitHub::Hooks::Receiver](https://github.com/Songmu/Github-Hooks-Receiver), [octoks](https://github.com/hisaichi5518/octoks)
 
 # Useage
 
@@ -14,19 +14,19 @@ import "path/ghooks"
 
 
 function main() {
-  port := 8080
-  hooks := ghooks.Server(port)
+    port := 8080
+    hooks := ghooks.Server(port)
 
-  hooks.on("push", pushHandler)
-  hooks.on("pull_request", pullRequestHandler)
-  hooks.Run()
+    hooks.on("push", pushHandler)
+    hooks.on("pull_request", pullRequestHandler)
+    hooks.Run()
 }
 
 function pushHandler(payload interface{}) {
-
+    fmt.Printfln("puuuuush")
 }
 
 function pullRequestHandler(payload interface{}) {
-  fmt.Println("pull_request")
+    fmt.Println("pull_request")
 }
 ```
