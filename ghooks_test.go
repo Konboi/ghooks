@@ -25,9 +25,10 @@ func PullRequest(paylod interface{}) {
 }
 
 func TestEmmit(t *testing.T) {
-	On("push", Push)
-	On("pull_request", PullRequest)
-	On("push2", Push2)
+	hooks := NewServer(999999)
+	hooks.On("push", Push)
+	hooks.On("pull_request", PullRequest)
+	hooks.On("push2", Push2)
 
 	var payload interface{}
 	Emmit("push", payload)
