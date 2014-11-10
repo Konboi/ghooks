@@ -2,15 +2,23 @@
 
 ghooks is github hooks receiver. inspired by [GitHub::Hooks::Receiver](https://github.com/Songmu/Github-Hooks-Receiver), [octoks](https://github.com/hisaichi5518/octoks)
 
-# Useage
+
+# Install
 
 ```
-go get <url>
+go get github.com/Konboi/ghooks
 ```
 
-```golang
+# Usage
 
-import "path/ghooks"
+```go
+// sample.go
+package main
+
+import {
+    "fmt"
+    "github.com/Konboi/ghooks"
+}
 
 
 function main() {
@@ -29,4 +37,13 @@ function pushHandler(payload interface{}) {
 function pullRequestHandler(payload interface{}) {
     fmt.Println("pull_request")
 }
+```
+
+```
+go run sample.go
+```
+
+```
+curl -H "X-GitHub-Event: push" -d '{"hoge":"fuga"}' http://localhost:8080
+> puuuuush
 ```
