@@ -1,6 +1,8 @@
 package ghooks
 
 import (
+	"bytes"
+	"encoding/json"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -8,9 +10,14 @@ import (
 )
 
 var count int
+var some_string string
 
 func Push(paylod interface{}) {
 	count++
+}
+
+func Push2(payload interface{}) {
+	some_string = payload.(map[string]interface{})["fuga"].(string)
 }
 
 func PullRequest(paylod interface{}) {
@@ -20,6 +27,7 @@ func PullRequest(paylod interface{}) {
 func TestEmmit(t *testing.T) {
 	On("push", Push)
 	On("pull_request", PullRequest)
+	On("push2", Push2)
 
 	var payload interface{}
 	Emmit("push", payload)
@@ -31,6 +39,15 @@ func TestEmmit(t *testing.T) {
 	Emmit("pull_request", payload)
 	if count != 3 {
 		t.Fatal("Not call pull_request Event")
+
+	}
+
+	b := []byte(`{"fuga": "hoge"}`)
+	dec := json.NewDecoder(bytes.NewReader(b))
+	dec.Decode(&payload)
+	Emmit("push2", payload)
+	if !strings.EqualFold(some_string, "hoge") {
+		t.Fatal("Cannot  access payload")
 	}
 
 }
