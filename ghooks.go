@@ -17,8 +17,8 @@ type Server struct {
 }
 
 type Hook struct {
-	Name string
-	Func func(payload interface{})
+	Event string
+	Func  func(payload interface{})
 }
 
 type Hooks struct {
@@ -28,12 +28,12 @@ type Hooks struct {
 var hooks Hooks
 
 func On(name string, handler func(payload interface{})) {
-	hooks.Hooks = append(hooks.Hooks, Hook{Name: name, Func: handler})
+	hooks.Hooks = append(hooks.Hooks, Hook{Event: name, Func: handler})
 }
 
 func Emmit(name string, payload interface{}) {
 	for _, v := range hooks.Hooks {
-		if strings.EqualFold(v.Name, name) {
+		if strings.EqualFold(v.Event, name) {
 			v.Func(payload)
 		}
 	}
