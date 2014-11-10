@@ -27,7 +27,7 @@ type Hooks struct {
 
 var hooks Hooks
 
-func On(name string, handler func(payload interface{})) {
+func (s *Server) On(name string, handler func(payload interface{})) {
 	hooks.Hooks = append(hooks.Hooks, Hook{Event: name, Func: handler})
 }
 

@@ -15,26 +15,26 @@ go get github.com/Konboi/ghooks
 // sample.go
 package main
 
-import {
+import (
     "fmt"
     "github.com/Konboi/ghooks"
-}
+)
 
 
-function main() {
+func main() {
     port := 8080
-    hooks := ghooks.Server(port)
+    hooks := ghooks.NewServer(port)
 
-    hooks.on("push", pushHandler)
-    hooks.on("pull_request", pullRequestHandler)
+    hooks.On("push", pushHandler)
+    hooks.On("pull_request", pullRequestHandler)
     hooks.Run()
 }
 
-function pushHandler(payload interface{}) {
+func pushHandler(payload interface{}) {
     fmt.Printfln("puuuuush")
 }
 
-function pullRequestHandler(payload interface{}) {
+func pullRequestHandler(payload interface{}) {
     fmt.Println("pull_request")
 }
 ```
