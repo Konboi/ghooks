@@ -17,6 +17,8 @@ package main
 
 import (
     "fmt"
+    "log"
+
     "github.com/Konboi/ghooks"
 )
 
@@ -31,7 +33,7 @@ func main() {
 }
 
 func pushHandler(payload interface{}) {
-    fmt.Printfln("puuuuush")
+    fmt.Println("puuuuush")
 }
 
 func pullRequestHandler(payload interface{}) {
