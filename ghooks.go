@@ -70,7 +70,11 @@ func Reciver(w http.ResponseWriter, req *http.Request) {
 
 	var payload interface{}
 	decoder := json.NewDecoder(req.Body)
-	decoder.Decode(&payload)
+	err := decoder.Decode(&payload)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
 
 	Emmit(event, payload)
 	w.WriteHeader(http.StatusOK)
