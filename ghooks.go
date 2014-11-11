@@ -44,7 +44,7 @@ func NewServer(port int) *Server {
 }
 
 func (s *Server) Run() error {
-	fmt.Printf("ghooks server start 127.0.0.1:%d \n", s.Port)
+	fmt.Printf("ghooks server start 0.0.0.0:%d \n", s.Port)
 	http.HandleFunc("/", Reciver)
 	return http.ListenAndServe(":"+strconv.Itoa(s.Port), nil)
 }
@@ -66,10 +66,15 @@ func Reciver(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
+	defer req.Body.Close()
 
 	var payload interface{}
 	decoder := json.NewDecoder(req.Body)
-	decoder.Decode(&payload)
+	err := decoder.Decode(&payload)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
 
 	Emmit(event, payload)
 	w.WriteHeader(http.StatusOK)
