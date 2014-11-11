@@ -44,7 +44,7 @@ func NewServer(port int) *Server {
 }
 
 func (s *Server) Run() error {
-	fmt.Printf("ghooks server start 127.0.0.1:%d \n", s.Port)
+	fmt.Printf("ghooks server start 0.0.0.0:%d \n", s.Port)
 	http.HandleFunc("/", Reciver)
 	return http.ListenAndServe(":"+strconv.Itoa(s.Port), nil)
 }
