@@ -89,4 +89,13 @@ func TestReciver(t *testing.T) {
 	if w.Code != 200 {
 		t.Fatalf("Not return 200; received %d", w.Code)
 	}
+
+	json_string = `{"fuga": "hoge", "foo": { "bar", "boo" }}`
+	req, _ = http.NewRequest("POST", "/", strings.NewReader(json_string))
+	req.Header.Set("X-GitHub-Event", "hoge")
+	w = httptest.NewRecorder()
+	Reciver(w, req)
+	if w.Code == 200 {
+		t.Fatalf("Should not be 200; received %d", w.Code)
+	}
 }
