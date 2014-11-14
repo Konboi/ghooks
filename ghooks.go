@@ -76,6 +76,7 @@ func Reciver(w http.ResponseWriter, req *http.Request) {
 		decoder = json.NewDecoder(req.Body)
 
 	} else if strings.Contains(req.Header.Get("Content-Type"), "application/x-www-form-urlencoded") {
+
 		err := req.ParseForm()
 		if err != nil {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
