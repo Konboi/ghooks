@@ -72,12 +72,9 @@ func Reciver(w http.ResponseWriter, req *http.Request) {
 	var decoder *json.Decoder
 
 	if strings.Contains(req.Header.Get("Content-Type"), "application/json") {
+
 		decoder = json.NewDecoder(req.Body)
-		err := decoder.Decode(&payload)
-		if err != nil {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			return
-		}
+
 	} else if strings.Contains(req.Header.Get("Content-Type"), "application/x-www-form-urlencoded") {
 		err := req.ParseForm()
 		if err != nil {
@@ -86,14 +83,13 @@ func Reciver(w http.ResponseWriter, req *http.Request) {
 		}
 		p := req.FormValue("payload")
 		decoder = json.NewDecoder(strings.NewReader(p))
-		err = decoder.Decode(&payload)
-		if err != nil {
-			http.Error(w, "Bad Request", http.StatusBadRequest)
-			fmt.Printf("error: %s", err.Error())
-			return
-		}
 	}
 
+	err := decoder.Decode(&payload)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
 	Emmit(event, payload)
 	w.WriteHeader(http.StatusOK)
 }
