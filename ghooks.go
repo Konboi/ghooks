@@ -1,9 +1,15 @@
 package ghooks
 
 import (
+	"bytes"
+	"crypto/hmac"
+	"crypto/sha1"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 )
@@ -13,7 +19,8 @@ const (
 )
 
 type Server struct {
-	Port int
+	Port   int
+	Secret string
 }
 
 type Hook struct {
@@ -40,16 +47,16 @@ func Emmit(name string, payload interface{}) {
 }
 
 func NewServer(port int) *Server {
-	return &Server{port}
+	return &Server{Port: port}
 }
 
 func (s *Server) Run() error {
 	fmt.Printf("ghooks server start 0.0.0.0:%d \n", s.Port)
-	http.HandleFunc("/", Reciver)
+	http.HandleFunc("/", s.Reciver)
 	return http.ListenAndServe(":"+strconv.Itoa(s.Port), nil)
 }
 
-func Reciver(w http.ResponseWriter, req *http.Request) {
+func (s *Server) Reciver(w http.ResponseWriter, req *http.Request) {
 	if req.Method == "GET" {
 		http.Error(w, "Method Not Allowd", http.StatusMethodNotAllowed)
 		return
@@ -68,29 +75,60 @@ func Reciver(w http.ResponseWriter, req *http.Request) {
 	}
 	defer req.Body.Close()
 
+	body, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		http.Error(w, "Bad Request", http.StatusBadRequest)
+		return
+	}
+
+	if s.Secret != "" {
+		signature := req.Header.Get("X-Hub-Signature")
+		if !s.isValidSignature(body, signature) {
+			http.Error(w, "Bad Request", http.StatusBadRequest)
+			return
+		}
+	}
+
 	var payload interface{}
 	var decoder *json.Decoder
 
 	if strings.Contains(req.Header.Get("Content-Type"), "application/json") {
 
-		decoder = json.NewDecoder(req.Body)
+		decoder = json.NewDecoder(bytes.NewReader(body))
 
 	} else if strings.Contains(req.Header.Get("Content-Type"), "application/x-www-form-urlencoded") {
 
-		err := req.ParseForm()
+		v, err := url.ParseQuery(string(body))
 		if err != nil {
 			http.Error(w, "Bad Request", http.StatusBadRequest)
 			return
 		}
-		p := req.FormValue("payload")
+		p := v.Get("payload")
 		decoder = json.NewDecoder(strings.NewReader(p))
 	}
 
-	err := decoder.Decode(&payload)
-	if err != nil {
+	if err := decoder.Decode(&payload); err != nil {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
 	Emmit(event, payload)
 	w.WriteHeader(http.StatusOK)
+}
+
+func (s *Server) isValidSignature(body []byte, signature string) bool {
+
+	if !strings.HasPrefix(signature, "sha1=") {
+		return false
+	}
+
+	mac := hmac.New(sha1.New, []byte(s.Secret))
+	mac.Write(body)
+	actual := mac.Sum(nil)
+
+	expected, err := hex.DecodeString(signature[5:])
+	if err != nil {
+		return false
+	}
+
+	return hmac.Equal(actual, expected)
 }

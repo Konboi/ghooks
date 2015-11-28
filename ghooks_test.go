@@ -60,7 +60,8 @@ func TestReciver(t *testing.T) {
 	}
 
 	w := httptest.NewRecorder()
-	Reciver(w, req)
+	s := &Server{}
+	s.Reciver(w, req)
 	if w.Code == 200 {
 		t.Fatalf("Allowd only POST Method but expected status 200; received %d", w.Code)
 	}
@@ -68,7 +69,8 @@ func TestReciver(t *testing.T) {
 	req, _ = http.NewRequest("POST", "/", nil)
 	req.Header.Add("X-GitHub-Event", "")
 	w = httptest.NewRecorder()
-	Reciver(w, req)
+	s = &Server{}
+	s.Reciver(w, req)
 	if w.Code == 200 {
 		t.Fatalf("Event name is nil but return 200; received %d", w.Code)
 	}
@@ -76,7 +78,8 @@ func TestReciver(t *testing.T) {
 	req, _ = http.NewRequest("POST", "/", nil)
 	req.Header.Set("X-GitHub-Event", "hoge")
 	w = httptest.NewRecorder()
-	Reciver(w, req)
+	s = &Server{}
+	s.Reciver(w, req)
 	if w.Code == 200 {
 		t.Fatalf("Body is nil but return 200; received %d", w.Code)
 	}
@@ -86,7 +89,8 @@ func TestReciver(t *testing.T) {
 	req.Header.Set("X-GitHub-Event", "hoge")
 	req.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
-	Reciver(w, req)
+	s = &Server{}
+	s.Reciver(w, req)
 	if w.Code != 200 {
 		t.Fatalf("Not return 200; received %d", w.Code)
 	}
@@ -96,7 +100,8 @@ func TestReciver(t *testing.T) {
 	req.Header.Set("X-GitHub-Event", "hoge")
 	req.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
-	Reciver(w, req)
+	s = &Server{}
+	s.Reciver(w, req)
 	if w.Code == 200 {
 		t.Fatalf("Should not be 200; received %d", w.Code)
 	}
@@ -106,9 +111,44 @@ func TestReciver(t *testing.T) {
 	req.Header.Set("X-GitHub-Event", "hoge")
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	w = httptest.NewRecorder()
-	Reciver(w, req)
+	s = &Server{}
+	s.Reciver(w, req)
 	if w.Code != 200 {
 		t.Fatalf("Not return 200; received %d", w.Code)
 	}
 
+	json_string = `{"fuga": "hoge", "foo": { "bar": "boo" }}`
+	req, _ = http.NewRequest("POST", "/", strings.NewReader(json_string))
+	req.Header.Set("X-GitHub-Event", "hoge")
+	req.Header.Set("Content-Type", "application/json")
+	w = httptest.NewRecorder()
+	s = &Server{Secret: "mysecret"}
+	s.Reciver(w, req)
+	if w.Code != 400 {
+		t.Fatalf("Not return 400; received %d", w.Code)
+	}
+
+	json_string = `{"fuga": "hoge", "foo": { "bar": "boo" }}`
+	req, _ = http.NewRequest("POST", "/", strings.NewReader(json_string))
+	req.Header.Set("X-GitHub-Event", "hoge")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Hub-Signature", "sha1=invalid")
+	w = httptest.NewRecorder()
+	s = &Server{Secret: "dameleon"}
+	s.Reciver(w, req)
+	if w.Code != 400 {
+		t.Fatalf("Not return 400; received %d", w.Code)
+	}
+
+	json_string = `{"fuga": "hoge", "foo": { "bar": "boo" }}`
+	req, _ = http.NewRequest("POST", "/", strings.NewReader(json_string))
+	req.Header.Set("X-GitHub-Event", "hoge")
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("X-Hub-Signature", "sha1=17f693f6f260c0e4b4090ae1e0cf195e03bed614")
+	w = httptest.NewRecorder()
+	s = &Server{Secret: "mysecret"}
+	s.Reciver(w, req)
+	if w.Code != 200 {
+		t.Fatalf("Not return 200; received %d", w.Code)
+	}
 }
