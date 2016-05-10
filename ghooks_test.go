@@ -24,6 +24,20 @@ func PullRequest(paylod interface{}) {
 	count += 2
 }
 
+func TestNewServer(t *testing.T) {
+	hooks := NewServer(999999)
+
+	if hooks.Host != "0.0.0.0" {
+		t.Fatal("Default host is 0.0.0.0")
+	}
+
+	hooks2 := NewServer(999999, "127.0.0.1")
+
+	if hooks2.Host != "127.0.0.1" {
+		t.Fatalf("Not equal 127.0.0.1")
+	}
+}
+
 func TestEmmit(t *testing.T) {
 	hooks := NewServer(999999)
 	hooks.On("push", Push)
