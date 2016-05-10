@@ -10,7 +10,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"strconv"
 	"strings"
 )
 
@@ -21,6 +20,7 @@ const (
 type Server struct {
 	Port   int
 	Secret string
+	Host   string
 }
 
 type Hook struct {
@@ -46,14 +46,20 @@ func Emmit(name string, payload interface{}) {
 	}
 }
 
-func NewServer(port int) *Server {
-	return &Server{Port: port}
+func NewServer(port int, hosts ...string) *Server {
+	host := "0.0.0.0"
+
+	if len(hosts) > 0 && hosts[0] != "" {
+		host = hosts[0]
+	}
+
+	return &Server{Port: port, Host: host}
 }
 
 func (s *Server) Run() error {
-	fmt.Printf("ghooks server start 0.0.0.0:%d \n", s.Port)
+	fmt.Printf("ghooks server start %s:%d \n", s.Host, s.Port)
 	http.HandleFunc("/", s.Reciver)
-	return http.ListenAndServe(":"+strconv.Itoa(s.Port), nil)
+	return http.ListenAndServe(fmt.Sprintf("%s:%d", s.Host, s.Port), nil)
 }
 
 func (s *Server) Reciver(w http.ResponseWriter, req *http.Request) {
