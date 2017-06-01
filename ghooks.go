@@ -38,7 +38,7 @@ func (s *Server) On(name string, handler func(payload interface{})) {
 	hooks.Hooks = append(hooks.Hooks, Hook{Event: name, Func: handler})
 }
 
-func Emmit(name string, payload interface{}) {
+func Emit(name string, payload interface{}) {
 	for _, v := range hooks.Hooks {
 		if strings.EqualFold(v.Event, name) {
 			v.Func(payload)
@@ -58,11 +58,11 @@ func NewServer(port int, hosts ...string) *Server {
 
 func (s *Server) Run() error {
 	fmt.Printf("ghooks server start %s:%d \n", s.Host, s.Port)
-	http.HandleFunc("/", s.Reciver)
+	http.HandleFunc("/", s.Receiver)
 	return http.ListenAndServe(fmt.Sprintf("%s:%d", s.Host, s.Port), nil)
 }
 
-func (s *Server) Reciver(w http.ResponseWriter, req *http.Request) {
+func (s *Server) Receiver(w http.ResponseWriter, req *http.Request) {
 	if req.Method == "GET" {
 		http.Error(w, "Method Not Allowd", http.StatusMethodNotAllowed)
 		return
@@ -117,7 +117,7 @@ func (s *Server) Reciver(w http.ResponseWriter, req *http.Request) {
 		http.Error(w, "Bad Request", http.StatusBadRequest)
 		return
 	}
-	Emmit(event, payload)
+	Emit(event, payload)
 	w.WriteHeader(http.StatusOK)
 }
 

@@ -38,20 +38,20 @@ func TestNewServer(t *testing.T) {
 	}
 }
 
-func TestEmmit(t *testing.T) {
+func TestEmit(t *testing.T) {
 	hooks := NewServer(999999)
 	hooks.On("push", Push)
 	hooks.On("pull_request", PullRequest)
 	hooks.On("push2", Push2)
 
 	var payload interface{}
-	Emmit("push", payload)
+	Emit("push", payload)
 
 	if count != 1 {
 		t.Fatal("Not call push Event")
 	}
 
-	Emmit("pull_request", payload)
+	Emit("pull_request", payload)
 	if count != 3 {
 		t.Fatal("Not call pull_request Event")
 
@@ -60,14 +60,14 @@ func TestEmmit(t *testing.T) {
 	b := []byte(`{"fuga": "hoge"}`)
 	dec := json.NewDecoder(bytes.NewReader(b))
 	dec.Decode(&payload)
-	Emmit("push2", payload)
+	Emit("push2", payload)
 	if !strings.EqualFold(some_string, "hoge") {
 		t.Fatal("Cannot  access payload")
 	}
 
 }
 
-func TestReciver(t *testing.T) {
+func TestReceiver(t *testing.T) {
 	req, err := http.NewRequest("GET", "/", nil)
 	if err != nil {
 		t.Fatal(err)
@@ -75,7 +75,7 @@ func TestReciver(t *testing.T) {
 
 	w := httptest.NewRecorder()
 	s := &Server{}
-	s.Reciver(w, req)
+	s.Receiver(w, req)
 	if w.Code == 200 {
 		t.Fatalf("Allowd only POST Method but expected status 200; received %d", w.Code)
 	}
@@ -84,7 +84,7 @@ func TestReciver(t *testing.T) {
 	req.Header.Add("X-GitHub-Event", "")
 	w = httptest.NewRecorder()
 	s = &Server{}
-	s.Reciver(w, req)
+	s.Receiver(w, req)
 	if w.Code == 200 {
 		t.Fatalf("Event name is nil but return 200; received %d", w.Code)
 	}
@@ -93,7 +93,7 @@ func TestReciver(t *testing.T) {
 	req.Header.Set("X-GitHub-Event", "hoge")
 	w = httptest.NewRecorder()
 	s = &Server{}
-	s.Reciver(w, req)
+	s.Receiver(w, req)
 	if w.Code == 200 {
 		t.Fatalf("Body is nil but return 200; received %d", w.Code)
 	}
@@ -104,7 +104,7 @@ func TestReciver(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
 	s = &Server{}
-	s.Reciver(w, req)
+	s.Receiver(w, req)
 	if w.Code != 200 {
 		t.Fatalf("Not return 200; received %d", w.Code)
 	}
@@ -115,7 +115,7 @@ func TestReciver(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
 	s = &Server{}
-	s.Reciver(w, req)
+	s.Receiver(w, req)
 	if w.Code == 200 {
 		t.Fatalf("Should not be 200; received %d", w.Code)
 	}
@@ -126,7 +126,7 @@ func TestReciver(t *testing.T) {
 	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	w = httptest.NewRecorder()
 	s = &Server{}
-	s.Reciver(w, req)
+	s.Receiver(w, req)
 	if w.Code != 200 {
 		t.Fatalf("Not return 200; received %d", w.Code)
 	}
@@ -137,7 +137,7 @@ func TestReciver(t *testing.T) {
 	req.Header.Set("Content-Type", "application/json")
 	w = httptest.NewRecorder()
 	s = &Server{Secret: "mysecret"}
-	s.Reciver(w, req)
+	s.Receiver(w, req)
 	if w.Code != 400 {
 		t.Fatalf("Not return 400; received %d", w.Code)
 	}
@@ -149,7 +149,7 @@ func TestReciver(t *testing.T) {
 	req.Header.Set("X-Hub-Signature", "sha1=invalid")
 	w = httptest.NewRecorder()
 	s = &Server{Secret: "dameleon"}
-	s.Reciver(w, req)
+	s.Receiver(w, req)
 	if w.Code != 400 {
 		t.Fatalf("Not return 400; received %d", w.Code)
 	}
@@ -161,7 +161,7 @@ func TestReciver(t *testing.T) {
 	req.Header.Set("X-Hub-Signature", "sha1=17f693f6f260c0e4b4090ae1e0cf195e03bed614")
 	w = httptest.NewRecorder()
 	s = &Server{Secret: "mysecret"}
-	s.Reciver(w, req)
+	s.Receiver(w, req)
 	if w.Code != 200 {
 		t.Fatalf("Not return 200; received %d", w.Code)
 	}
